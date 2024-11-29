@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'tabs/tasks_tab/task_tab.dart';
 import 'tasks_bottom_sheet/task_dottom_sheet.dart';
 
@@ -52,15 +53,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildFab() => FloatingActionButton(
     onPressed: (){
-      showTaskBottomSheet();
-    }
+          TaskBottomSheet.show(context);
+        }
     ,child: const Icon(
     Icons.add,),
   );
-
-  void showTaskBottomSheet(){
-    showModalBottomSheet(context:context ,builder: (context) =>TaskBottomSheet(),);
-  }
-
 }
 

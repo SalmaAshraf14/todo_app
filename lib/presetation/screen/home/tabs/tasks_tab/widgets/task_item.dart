@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-
 import 'package:todoo_app/core/utils/date_utils.dart';
+import 'package:todoo_app/datebase_manager/model/date_dm.dart';
 
 import '../../../../../../core/utils/colors_manager.dart';
 
 class TaskItem extends StatelessWidget {
-  TaskItem({super.key, });
+  TaskItem({super.key, required this.todo});
+
+  TodoDM todo;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -65,11 +67,20 @@ class TaskItem extends StatelessWidget {
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-
-                              Text('Task dascription',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w700,color: ColorsManager.blue),),
-                              SizedBox(height: 4,),
-                              Text('Task title',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w700,color: ColorsManager.blue)),
-                              SizedBox(height: 4,),
+                    Text(
+                      todo.title,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: ColorsManager.blue),
+                    ),
+                    SizedBox(height: 4,),
+                    Text(todo.description,
+                        style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: ColorsManager.blue)),
+                    SizedBox(height: 4,),
                               Text(DateTime.now().toFormattedDate,style: TextStyle(fontSize: 14,fontWeight: FontWeight.w700,color: ColorsManager.blue)),
                             ],
                           ),

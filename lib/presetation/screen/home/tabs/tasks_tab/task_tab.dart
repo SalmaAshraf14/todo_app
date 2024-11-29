@@ -1,9 +1,12 @@
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:todoo_app/core/utils/app_styles.dart';
 import 'package:todoo_app/core/utils/colors_manager.dart';
-
-import 'widgets/task_item.dart';
+import 'package:todoo_app/core/utils/date_utils.dart';
+import 'package:todoo_app/datebase_manager/model/date_dm.dart';
+import 'package:todoo_app/presetation/screen/home/tabs/tasks_tab/widgets/task_item.dart';
 
 class TasksTab extends StatefulWidget {
   TasksTab({super.key});
@@ -14,51 +17,85 @@ class TasksTab extends StatefulWidget {
 
 class TasksTabState extends State<TasksTab> {
   DateTime calenderSelectedDate = DateTime.now();
+  List<TodoDM> todoList = [];
 
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
+    getTodosFromFireStore();
     return Column(
       children: [
-
+        Stack(
+          children: [
+            Container(
+              height: 115.h,
+              color: ColorsManager.blue,
+            ),
             buildCalenderTimeLine(),
-        TaskItem(),
           ],
-
-    ); // rendering ui
+        ),
+        Expanded(
+            child: ListView.builder(
+          itemBuilder: (context, index) => TaskItem(todo: todoList[index]),
+          itemCount: todoList.length,
+        ))
+      ],
+    );
+    // rendering ui
   }
 
-  Widget buildCalenderTimeLine() =>EasyDateTimeLine(
-    initialDate: DateTime.now(),
-    onDateChange: (selectedDate) {
-      //`selectedDate` the new date selected.
-    },
-    headerProps: const EasyHeaderProps(
-      showHeader: false,
-      monthPickerType: MonthPickerType.switcher,
-      dateFormatter: DateFormatter.fullDateDMY(),
-    ),
-    dayProps: const EasyDayProps(
-      height: 75,
-      width: 50,
-
-      dayStructure: DayStructure.dayStrDayNum,
-      activeDayStyle: DayStyle(
-        dayStrStyle: TextStyle(color: ColorsManager.blue,fontSize: 15,fontWeight:FontWeight.w700),
-        dayNumStyle: TextStyle(color: ColorsManager.blue,fontSize: 15,fontWeight:FontWeight.w700),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          color: Colors.white
+  Widget buildCalenderTimeLine() => EasyInfiniteDateTimeLine(
+        firstDate: DateTime.now().subtract(Duration(days: 365)),
+        focusDate: calenderSelectedDate,
+        lastDate: DateTime.now().add(Duration(days: 365)),
+        onDateChange: (selectedDate) {},
+        itemBuilder: (context, date, isSelected, onTap) {
+          return InkWell(
+            onTap: () {
+              calenderSelectedDate = date;
+              setState(() {});
+            },
+            child: Card(
+              color: ColorsManager.white,
+              elevation: 12,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${date.day}',
+                    style: isSelected
+                        ? AppLightStyles.calenderSelectedItem
+                        : AppLightStyles.calenderUnSelectedItem,
+                  ),
+                  Text(
+                    date.getDayName,
+                    style: isSelected
+                        ? AppLightStyles.calenderSelectedItem
+                        : AppLightStyles.calenderUnSelectedItem,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
 
-          ),
-  inactiveDayStyle: DayStyle(
-  dayStrStyle: TextStyle(color: ColorsManager.black,fontSize: 15,fontWeight:FontWeight.w700),
-  dayNumStyle: TextStyle(color: ColorsManager.black,fontSize: 15,fontWeight:FontWeight.w700),
-  decoration: BoxDecoration(
-  borderRadius: BorderRadius.all(Radius.circular(8)),
-  color: Colors.white
-        ),
-  )
-  ));
+  getTodosFromFireStore() async {
+    CollectionReference todoCollection =
+        FirebaseFirestore.instance.collection(TodoDM.collectionName);
+    QuerySnapshot collectionSnapShot = await todoCollection.get();
+    List<QueryDocumentSnapshot> documentSnapShot = collectionSnapShot.docs;
+    List<TodoDM> todoList = documentSnapShot.map((docSnapShot) {
+      Map<String, dynamic> json = docSnapShot.data() as Map<String, dynamic>;
+      TodoDM todo = TodoDM.formFireStore(json);
+      return todo;
+    }).toList();
+  }
 }
