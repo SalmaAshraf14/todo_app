@@ -17,7 +17,7 @@ class TasksTab extends StatefulWidget {
 
 class TasksTabState extends State<TasksTab> {
   DateTime calenderSelectedDate = DateTime.now();
-  List<TodoDM> todoList = [];
+  List<TodoDM> todosList = [];
 
   @override
   void initState() {
@@ -40,8 +40,8 @@ class TasksTabState extends State<TasksTab> {
         ),
         Expanded(
             child: ListView.builder(
-          itemBuilder: (context, index) => TaskItem(todo: todoList[index]),
-          itemCount: todoList.length,
+          itemBuilder: (context, index) => TaskItem(todo: todosList[index]),
+          itemCount: todosList.length,
         ))
       ],
     );
@@ -64,7 +64,7 @@ class TasksTabState extends State<TasksTab> {
               elevation: 12,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
-             ),
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -92,10 +92,18 @@ class TasksTabState extends State<TasksTab> {
         FirebaseFirestore.instance.collection(TodoDM.collectionName);
     QuerySnapshot collectionSnapShot = await todoCollection.get();
     List<QueryDocumentSnapshot> documentSnapShot = collectionSnapShot.docs;
-    List<TodoDM> todoList = documentSnapShot.map((docSnapShot) {
+    List<TodoDM>? todoList = documentSnapShot.map((docSnapShot) {
       Map<String, dynamic> json = docSnapShot.data() as Map<String, dynamic>;
       TodoDM todo = TodoDM.formFireStore(json);
       return todo;
     }).toList();
+    todoList = todosList
+        .where(
+          (todo) =>
+              todo.dateTime.day == calenderSelectedDate.day &&
+              todo.dateTime.month == calenderSelectedDate.month &&
+              todo.dateTime.year == calenderSelectedDate.year,
+        )
+        .toList();
   }
 }
