@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todoo_app/presetation/screen/home/tabs/settings_tab/settings_tab.dart';
 
 import 'tabs/tasks_tab/task_tab.dart';
 import 'tasks_bottom_sheet/task_dottom_sheet.dart';
@@ -11,13 +12,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  GlobalKey<TasksTabState> tasksTabKey = GlobalKey();
   int currentIndex = 0;
-  List<Widget> tabs = [
-   TasksTab(),
-   TasksTab(),
-  ];
+  List<Widget> tabs = [];
 
-
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    tabs = [
+      TasksTab(
+        key: tasksTabKey,
+      ),
+      SettingsTab(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +61,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildFab() => FloatingActionButton(
-    onPressed: (){
-          TaskBottomSheet.show(context);
+        onPressed: () async {
+          await TaskBottomSheet.show(context);
+          tasksTabKey.currentState?.getTodosFromFireStore();
         }
     ,child: const Icon(
     Icons.add,),

@@ -17,16 +17,17 @@ class TodoDM {
         'id': id,
         'title': title,
         'description': description,
-        'dateTime': dateTime,
+        'dateTime': dateTime.millisecondsSinceEpoch,
         'isDone': isDone,
       };
 
-  TodoDM.formFireStore(Map<String, dynamic> date)
+  TodoDM.formFireStore(Map<String, dynamic> data)
       : this(
-          id: date['id'],
-          title: date['title'],
-          description: date['description'],
-          dateTime: date['dateTime'].toDate(),
-          isDone: date['isDone'],
+          id: data['id'],
+          title: data['title'],
+          description: data['description'],
+          dateTime: DateTime.fromMillisecondsSinceEpoch(data['dateTime']),
+          isDone: data['isDone'],
         );
 }
+

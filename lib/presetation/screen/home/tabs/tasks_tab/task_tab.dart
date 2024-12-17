@@ -6,10 +6,11 @@ import 'package:todoo_app/core/utils/app_styles.dart';
 import 'package:todoo_app/core/utils/colors_manager.dart';
 import 'package:todoo_app/core/utils/date_utils.dart';
 import 'package:todoo_app/datebase_manager/model/date_dm.dart';
+import 'package:todoo_app/datebase_manager/model/user_dm.dart';
 import 'package:todoo_app/presetation/screen/home/tabs/tasks_tab/widgets/task_item.dart';
 
 class TasksTab extends StatefulWidget {
-  TasksTab({super.key});
+  const TasksTab({super.key});
 
   @override
   State<TasksTab> createState() => TasksTabState();
@@ -21,26 +22,33 @@ class TasksTabState extends State<TasksTab> {
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
+    getTodosFromFireStore();
   }
 
   @override
   Widget build(BuildContext context) {
-    getTodosFromFireStore();
     return Column(
       children: [
         Stack(
           children: [
             Container(
-              height: 115.h,
               color: ColorsManager.blue,
+              height: 115.h,
             ),
             buildCalenderTimeLine(),
           ],
         ),
         Expanded(
             child: ListView.builder(
-          itemBuilder: (context, index) => TaskItem(todo: todosList[index]),
+          itemBuilder: (context, index) => TaskItem(
+            todoKey: GlobalKey(),
+            todo: todosList[index],
+            onDeletedTask: () {
+              getTodosFromFireStore();
+            },
+          ),
           itemCount: todosList.length,
         ))
       ],
@@ -57,7 +65,7 @@ class TasksTabState extends State<TasksTab> {
           return InkWell(
             onTap: () {
               calenderSelectedDate = date;
-              setState(() {});
+              getTodosFromFireStore();
             },
             child: Card(
               color: ColorsManager.white,
@@ -88,16 +96,21 @@ class TasksTabState extends State<TasksTab> {
       );
 
   getTodosFromFireStore() async {
-    CollectionReference todoCollection =
-        FirebaseFirestore.instance.collection(TodoDM.collectionName);
+    CollectionReference todoCollection = FirebaseFirestore.instance
+        .collection(UserDm.collectionName)
+        .doc(UserDm.currentUser!.id)
+        .collection(TodoDM.collectionName);
     QuerySnapshot collectionSnapShot = await todoCollection.get();
+
     List<QueryDocumentSnapshot> documentSnapShot = collectionSnapShot.docs;
-    List<TodoDM>? todoList = documentSnapShot.map((docSnapShot) {
+    todosList = documentSnapShot.map((docSnapShot) {
       Map<String, dynamic> json = docSnapShot.data() as Map<String, dynamic>;
+
       TodoDM todo = TodoDM.formFireStore(json);
       return todo;
     }).toList();
-    todoList = todosList
+
+    todosList = todosList
         .where(
           (todo) =>
               todo.dateTime.day == calenderSelectedDate.day &&
@@ -105,5 +118,6 @@ class TasksTabState extends State<TasksTab> {
               todo.dateTime.year == calenderSelectedDate.year,
         )
         .toList();
+    setState(() {});
   }
 }
